@@ -1,4 +1,4 @@
-# WebRTWhat?
+## WebRTWhat?
 [WebRTC][webrtc] enables web browsers with Real-Time
 Communications capabilities.
 WebRTC needs servers/infrastructure to work (see [this HTML5Rocks article][webrtc-infra]):
@@ -10,7 +10,7 @@ WebRTC needs servers/infrastructure to work (see [this HTML5Rocks article][webrt
   describing "the mechanisms for allowing a JavaScript application to fully
   control the signaling plane of a multimedia session"
 
-# Goal: Hassle-Free Peer-to-Peer WebRTC
+## Goal: Hassle-Free Peer-to-Peer WebRTC
 This project aims at providing a simple JS library to enable peer-to-peer
 WebRTC, without any initial setup required. We will use:
 - Google Chrome's list of public STUN server
