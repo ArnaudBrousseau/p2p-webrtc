@@ -23,6 +23,7 @@ module.exports = function (grunt) {
     config: config,
     data: config,
     jitGrunt: {
+      simplemocha: 'grunt-simple-mocha',
       changelog: 'grunt-conventional-changelog'
     }
   });
