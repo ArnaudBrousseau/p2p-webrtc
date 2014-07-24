@@ -7,11 +7,12 @@ module.exports = function (grunt) {
   var config = {
     // Metadata.
     pkg: grunt.file.readJSON('package.json'),
-    banner: '/*! <%= pkg.name %> - v<%= pkg.version %>\n' +
+    banner: '/*\n' +
+      ' *  <%= pkg.name %> - v<%= pkg.version %>\n' +
       ' *  Release on: <%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '<%= pkg.homepage ? " *  " + pkg.homepage + "\\n" : "" %>' +
-      ' *  Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>\n' +
-      ' *  Licensed <%= pkg.license %> */\n',
+      ' *  Licensed <%= pkg.license %>\n' +
+      ' */\n',
   };
 
   var path = require('path');
@@ -20,6 +21,7 @@ module.exports = function (grunt) {
     init: true,
     configPath: path.join(process.cwd(), 'tasks'),
     config: config,
+    data: config,
     jitGrunt: {
       changelog: 'grunt-conventional-changelog'
     }

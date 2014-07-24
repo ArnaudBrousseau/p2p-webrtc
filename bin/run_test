@@ -1,6 +1,4 @@
 #!/bin/bash
 echo '=== RUNNING TEST'
 node_modules/mocha/bin/mocha --reporter=nyan
-echo '=== RUNNING JSHINT'
-node_modules/jshint/bin/jshint lib/ test/
 echo '=== DONE!'

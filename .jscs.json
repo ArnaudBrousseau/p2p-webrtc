@@ -57,11 +57,7 @@
     "beforeAlternate": true
   },
 
-  "requireKeywordsOnNewLine": [
-    "catch",
-    "else",
-    "while"
-  ],
+  "requireKeywordsOnNewLine": [],
 
   "requireSpacesInFunctionExpression": {
     "beforeOpeningRoundBrace": true,
