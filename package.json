@@ -1,0 +1,27 @@
+{
+  "name": "p2p-webrtc",
+  "version": "0.0.1",
+  "description": "Simple JS library to enable peer-to-peer WebRTC without any hardware setup ",
+  "contributors": [
+    {"name": "Arnaud Brousseau"},
+    {"name": "Buck Golemon"}
+  ],
+  "script": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArnaudBrousseau/p2p-webrtc"
+  },
+  "bugs": {
+    "url": "https://github.com/ArnaudBrousseau/p2p-webrtc/issues"
+  },
+  "keywords": ["webrtc", "p2p", "rt"],
+  "dependencies": {
+    "freeice": "1.0.0"
+  },
+  "devDependencies": {
+    "mocha": "1.21.0"
+  },
+  "license": "MIT"
+}
