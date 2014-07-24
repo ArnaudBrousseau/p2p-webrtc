@@ -1,5 +1,5 @@
-- [ ] Choose test runner
-- [ ] Hook up syntax linter
+- [x] Choose test runner
+- [x] Hook up syntax linter
 - [ ] Setup Travis
 - [ ] Implement signaling through public IRC (freenode)
 - [ ] Config interface to choose from different IRC servers and signaling modes (XMPP should be next)

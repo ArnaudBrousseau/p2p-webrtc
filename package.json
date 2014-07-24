@@ -6,9 +6,6 @@
     {"name": "Arnaud Brousseau"},
     {"name": "Buck Golemon"}
   ],
-  "script": {
-    "test": "mocha"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ArnaudBrousseau/p2p-webrtc"
@@ -21,7 +18,9 @@
     "freeice": "1.0.0"
   },
   "devDependencies": {
-    "mocha": "1.21.0"
+    "mocha": "1.21.0",
+    "jshint": "2.5.2",
+    "browserify": "5.1.0"
   },
   "license": "MIT"
 }

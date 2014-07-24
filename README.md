@@ -19,3 +19,6 @@ WebRTC, without any initial setup required. We will use:
 [webrtc]: http://www.webrtc.org/
 [webrtc-infra]: http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/
 [jsep]: http://tools.ietf.org/html/draft-uberti-rtcweb-jsep
+
+## Running tests
+From the command line: `bin/run_test`
