@@ -1,6 +1,9 @@
 default:
   - build
 
+test:
+  - simplemocha
+
 build:
   - jshint:lib
   - jscs:lib

@@ -21,4 +21,7 @@ WebRTC, without any initial setup required. We will use:
 [jsep]: http://tools.ietf.org/html/draft-uberti-rtcweb-jsep
 
 ## Running tests
-From the command line: `bin/run_test`
+From the command line: `grunt test`
+
+## Building
+From the command line: `grunt`
