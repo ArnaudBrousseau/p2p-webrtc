@@ -57,31 +57,6 @@ $('#answerRecdBtn').click(function() {
     $('#waitForConnection').modal('show');
 });
 
-$('#fileBtn').change(function() {
-    var file = this.files[0];
-    console.log(file);
-
-    sendFile(file);
-});
-
-function fileSent(file) {
-    console.log(file + " sent");
-}
-
-function fileProgress(file) {
-    console.log(file + " progress");
-}
-
-function sendFile(data) {
-    if (data.size) {
-        FileSender.send({
-          file: data,
-          onFileSent: fileSent,
-          onFileProgress: fileProgress,
-        });
-    }
-}
-
 function sendMessage() {
     if ($('#messageTextBox').val()) {
         var channel = new RTCMultiSession();
