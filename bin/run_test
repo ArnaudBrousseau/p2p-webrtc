@@ -1,4 +1,0 @@
-#!/bin/bash
-echo '=== RUNNING TEST'
-node_modules/mocha/bin/mocha --reporter=nyan
-echo '=== DONE!'

@@ -1,5 +1,9 @@
 module.exports = {
   options: {
-    dest: 'CHANGELOG.md'
-  }
+    timeout: 3000,
+    ignoreLeaks: false,
+    ui: 'bdd',
+    reporter: 'nyan'
+  },
+  src: ['test/**/*.js']
 }
