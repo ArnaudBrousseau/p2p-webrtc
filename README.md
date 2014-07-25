@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ArnaudBrousseau/p2p-webrtc.svg?branch=master)](https://travis-ci.org/ArnaudBrousseau/p2p-webrtc)
+
 ## WebRTWhat?
 [WebRTC][webrtc] enables web browsers with Real-Time
 Communications capabilities.
