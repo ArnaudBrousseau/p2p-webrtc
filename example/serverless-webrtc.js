@@ -1,251 +1,152 @@
-/* See also:
-    http://www.html5rocks.com/en/tutorials/webrtc/basics/
-    https://code.google.com/p/webrtc-samples/source/browse/trunk/apprtc/index.html
+/****************
+ * Util functions
+ ****************/
+var RTCMultiSession = function(options) {
+  return {
+    send: function (message) {
+      data = JSON.stringify(message);
+      activedc.send(data);
+    }
+  }
+};
 
-    https://webrtc-demos.appspot.com/html/pc1.html
-*/
+var onconnection = function() {
+    console.log('GREAT SUCCESS. PeerConnection connected.');
+};
 
-var cfg = {"iceServers":[{"url":"stun:23.21.150.121"}]},
-    con = { 'optional': [{'DtlsSrtpKeyAgreement': true}] };
+var onsignalingstatechange = function(state) {
+    console.info('Signaling state change', state);
+}
 
-/* THIS IS ALICE, THE CALLER/SENDER */
+var oniceconnectionstatechange = function (state) {
+    console.info('ICE connection state change', state);
+};
 
-var pc1 = new RTCPeerConnection(cfg, con),
-    dc1 = null, tn1 = null;
+var onicegatheringstatechange = function(state) {
+    console.info('ICE gathering state change', state);
+};
+
+var cfg = {'iceServers':[{'url':'stun:23.21.150.121'}]};
+// TODO: figure what that's for
+var con = {'optional': [{'DtlsSrtpKeyAgreement': true}]};
+
+
+/*********************
+ * Part handling Alice
+ *********************/
+
+// Alice creates a local offer (createChannel).
+// She has to provide Bob with an offer description. Once Bob joins the channel
+// Alice has to acknowledge Bob via ackPeerConnection. After that Alice and Bob
+// and connected peer-to-peer.
+
+var pc1 = new RTCPeerConnection(cfg, con); // Native browser API
+var dc1 = null; // DataChannel for Alice
 
 // Since the same JS file contains code for both sides of the connection,
 // activedc tracks which of the two possible datachannel variables we're using.
 var activedc;
 
-var pc1icedone = false;
-
-$('#showLocalOffer').modal('hide');
-$('#getRemoteAnswer').modal('hide');
-$('#waitForConnection').modal('hide');
-$('#createOrJoin').modal('show');
-
-$('#createBtn').click(function() {
-    $('#showLocalOffer').modal('show');
-    createLocalOffer();
-});
-
-$('#joinBtn').click(function() {
-    $('#getRemoteOffer').modal('show');
-});
-
-$('#offerSentBtn').click(function() {
-    $('#getRemoteAnswer').modal('show');
-});
-
-$('#offerRecdBtn').click(function() {
-    var offer = $('#remoteOffer').val();
-    var offerDesc = new RTCSessionDescription(JSON.parse(offer));
-    console.log("Received remote offer", offerDesc);
-    writeToChatLog("Received remote offer", "text-success");
-    handleOfferFromPC1(offerDesc);
-    $('#showLocalAnswer').modal('show');
-});
-
-$('#answerSentBtn').click(function() {
-    $('#waitForConnection').modal('show');
-});
-
-$('#answerRecdBtn').click(function() {
-    var answer = $('#remoteAnswer').val();
-    var answerDesc = new RTCSessionDescription(JSON.parse(answer));
-    handleAnswerFromPC2(answerDesc);
-    $('#waitForConnection').modal('show');
-});
-
-function sendMessage() {
-    if ($('#messageTextBox').val()) {
-        var channel = new RTCMultiSession();
-        writeToChatLog($('#messageTextBox').val(), "text-success");
-        channel.send({message: $('#messageTextBox').val()});
-        $('#messageTextBox').val("");
-
-        // Scroll chat text area to the bottom on new input.
-        $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
-    }
-
-    return false;
+/**
+ * This creates a local offer.
+ * The offer description will be logged to the console. It can then be used in
+ * a different browser to join the channel.
+ */
+var createChannel = function() {
+    setupDC1();
+    pc1.createOffer(function (sessionDescription) {
+        pc1.setLocalDescription(sessionDescription);
+        console.log("Local offer created:", sessionDescription);
+    }, function () {console.warn("Couldn't create offer");});
 };
 
-function setupDC1() {
+var ackPeerConnection = function(ackPayload) {
+    var answerDesc = new RTCSessionDescription(ackPayload);
+    console.log("Received remote answer: ", answerDesc);
+    pc1.setRemoteDescription(answerDesc);
+};
+
+var sendMessage = function(message) {
+    if (!message) { return; }
+    var channel = new RTCMultiSession();
+    channel.send({ message: message });
+}
+
+var setupDC1 = function() {
     try {
-        var fileReceiver1 = new FileReceiver();
-        dc1 = pc1.createDataChannel('test', {reliable:true});
+        dc1 = pc1.createDataChannel('test', {
+            reliable:true // TCP
+        });
         activedc = dc1;
         console.log("Created datachannel (pc1)");
-        dc1.onopen = function (e) {
-            console.log('data channel connect');
-            $('#waitForConnection').modal('hide');
-            $('#waitForConnection').remove();
-        }
-        dc1.onmessage = function (e) {
-            console.log("Got message (pc1)", e.data);
-            if (e.data.size) {
-                fileReceiver1.receive(e.data, {});
-            }
-            else {
-                if (e.data.charCodeAt(0) == 2) {
-                   // The first message we get from Firefox (but not Chrome)
-                   // is literal ASCII 2 and I don't understand why -- if we
-                   // leave it in, JSON.parse() will barf.
-                   return;
-                }
-                console.log(e);
-                var data = JSON.parse(e.data);
-                if (data.type === 'file') {
-                    fileReceiver1.receive(e.data, {});
-                }
-                else {
-                    writeToChatLog(data.message, "text-info");
-                    // Scroll chat text area to the bottom on new input.
-                    $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
-                }
-            }
-        };
+
+        dc1.onopen = function(e) { console.log('dataChannel opened', e); };
+        dc1.onmessage = function(e) { console.log("New message!" , e.data); };
     } catch (e) { console.warn("No data channel (pc1)", e); }
 }
 
-function createLocalOffer() {
-    setupDC1();
-    pc1.createOffer(function (desc) {
-        pc1.setLocalDescription(desc, function () {});
-        console.log("created local offer", desc);
-    }, function () {console.warn("Couldn't create offer");});
-}
-
+/**
+ * PeerConnection event handlers
+ */
 pc1.onicecandidate = function (e) {
     console.log("ICE candidate (pc1)", e);
-    if (e.candidate == null) {
-        $('#localOffer').html(JSON.stringify(pc1.localDescription));
-    }
+    if (!e.candidate) { console.log(JSON.stringify(pc1.localDescription)); }
 };
-
-function handleOnconnection() {
-    console.log("Datachannel connected");
-    writeToChatLog("Datachannel connected", "text-success");
-    $('#waitForConnection').modal('hide');
-    // If we didn't call remove() here, there would be a race on pc2:
-    //   - first onconnection() hides the dialog, then someone clicks
-    //     on answerSentBtn which shows it, and it stays shown forever.
-    $('#waitForConnection').remove();
-    $('#showLocalAnswer').modal('hide');
-    $('#messageTextBox').focus();
-}
-
-pc1.onconnection = handleOnconnection;
-
-function onsignalingstatechange(state) {
-    console.info('signaling state change:', state);
-}
-
-function oniceconnectionstatechange(state) {
-    console.info('ice connection state change:', state);
-}
-
-function onicegatheringstatechange(state) {
-    console.info('ice gathering state change:', state);
-}
-
+pc1.onconnection = onconnection;
 pc1.onsignalingstatechange = onsignalingstatechange;
 pc1.oniceconnectionstatechange = oniceconnectionstatechange;
 pc1.onicegatheringstatechange = onicegatheringstatechange;
 
-function handleAnswerFromPC2(answerDesc) {
-    console.log("Received remote answer: ", answerDesc);
-    writeToChatLog("Received remote answer", "text-success");
-    pc1.setRemoteDescription(answerDesc);
-}
 
-function handleCandidateFromPC2(iceCandidate) {
-    pc1.addIceCandidate(iceCandidate);
-}
+/*******************
+ * Part handling Bob
+ *******************/
 
+// Bob receives an offer description via copy/paste, IM, email, etc...
+// ...and joins a channel created by Alice this way.
 
-/* THIS IS BOB, THE ANSWERER/RECEIVER */
+var pc2 = new RTCPeerConnection(cfg, con);
+var dc2 = null;
 
-var pc2 = new RTCPeerConnection(cfg, con),
-    dc2 = null;
-
-var pc2icedone = false;
+var joinChannel = function(offerDescription) {
+    var offerDesc = new RTCSessionDescription(offerDescription);
+    console.info("Joining with an offer",offerDesc);
+    connectToOffer(offerDesc);
+};
 
 pc2.ondatachannel = function (e) {
-    var fileReceiver2 = new FileReceiver();
     var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
     console.log("Received datachannel (pc2)", arguments);
     dc2 = datachannel;
     activedc = dc2;
-    dc2.onopen = function (e) {
-        console.log('data channel connect');
-        $('#waitForConnection').remove();
-    }
+    dc2.onopen = function (e) { console.log('data channel connect'); }
     dc2.onmessage = function (e) {
         console.log("Got message (pc2)", e.data);
-        if (e.data.size) {
-            fileReceiver2.receive(e.data, {});
-        }
-        else {
-            var data = JSON.parse(e.data);
-            if (data.type === 'file') {
-                fileReceiver2.receive(e.data, {});
-            }
-            else {
-                writeToChatLog(data.message, "text-info");
-                // Scroll chat text area to the bottom on new input.
-                $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
-            }
-        }
     };
 };
 
-function handleOfferFromPC1(offerDesc) {
-    pc2.setRemoteDescription(offerDesc);
-    pc2.createAnswer(function (answerDesc) {
-        writeToChatLog("Created local answer", "text-success");
-        console.log("Created local answer: ", answerDesc);
-        pc2.setLocalDescription(answerDesc);
-    }, function () { console.warn("No create answer"); });
+/**
+ * This connects to a channel via an offer description provided by Alice.
+ * Once that's done an answer is going to be logged. Alice has to know about
+ * that answer to finalize the peer connection (see ackPeerConnection)
+ */
+var connectToOffer = function(offerDesc) {
+    pc2.setRemoteDescription(offerDesc, function() {
+        pc2.createAnswer(function (answerDesc) {
+            console.log("Created local answer: ", answerDesc);
+            pc2.setLocalDescription(answerDesc);
+        }, function () { console.error("Cannot create answer", arguments); });
+    }, function() { console.error("Cannot set remote desc", arguments); })
 }
 
+/**
+ * PeerConnection event handlers for Bob.
+ */
 pc2.onicecandidate = function (e) {
     console.log("ICE candidate (pc2)", e);
-    if (e.candidate == null)
-       $('#localAnswer').html(JSON.stringify(pc2.localDescription));
+    if (!e.candidate) { console.log(JSON.stringify(pc2.localDescription)); }
 };
-
+pc2.onconnection = onconnection;
 pc2.onsignalingstatechange = onsignalingstatechange;
 pc2.oniceconnectionstatechange = oniceconnectionstatechange;
 pc2.onicegatheringstatechange = onicegatheringstatechange;
-
-function handleCandidateFromPC1(iceCandidate) {
-    pc2.addIceCandidate(iceCandidate);
-}
-
-pc2.onaddstream = function (e) {
-    console.log("Got remote stream", e);
-    var el = new Audio();
-    el.autoplay = true;
-    attachMediaStream(el, e.stream);
-};
-
-pc2.onconnection = handleOnconnection;
-
-function getTimestamp() {
-    var totalSec = new Date().getTime() / 1000;
-    var hours = parseInt(totalSec / 3600) % 24;
-    var minutes = parseInt(totalSec / 60) % 60;
-    var seconds = parseInt(totalSec % 60);
-
-    var result = (hours < 10 ? "0" + hours : hours) + ":" +
-                 (minutes < 10 ? "0" + minutes : minutes) + ":" +
-                 (seconds  < 10 ? "0" + seconds : seconds);
-
-    return result;
-}
-
-function writeToChatLog(message, message_type) {
-    document.getElementById('chatlog').innerHTML += '<p class=\"' + message_type + '\">' + "[" + getTimestamp() + "] " + message + '</p>';
-}
